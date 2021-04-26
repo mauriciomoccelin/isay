@@ -2,13 +2,13 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <v-spacer v-if="!$vuetify.breakpoint.mobile"></v-spacer>
-      Chat
+      <v-toolbar-title>Signal R | Real Time Chat</v-toolbar-title>
       <v-spacer v-if="!$vuetify.breakpoint.mobile"></v-spacer>
     </v-app-bar>
 
     <v-main>
       <v-container>
-        <v-form @submit.prevent="send" v-model="valid">
+        <v-form @submit.prevent="send">
           <v-row>
             <v-col cols="12" xl="4" lg="4">
               <v-text-field
@@ -16,10 +16,9 @@
                 name="input-7-4"
                 label="Message"
                 v-model="model.text"
-                :rules="[(v) => !!v || v !== '' || 'Diga algima coisa...']"
               ></v-text-field>
               <v-btn
-                :disabled="!valid"
+                :disabled="!model.text"
                 color="success"
                 class="mr-4"
                 @click="send"
@@ -30,7 +29,6 @@
             <v-col cols="12" xl="4" lg="4">
               <v-list subheader>
                 <v-subheader class="headline">Messages</v-subheader>
-
                 <v-list-item v-for="(message, index) in messages" :key="index">
                   <v-list-item-content>
                     <v-list-item-title>
@@ -51,7 +49,7 @@
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
-          <span class="headline">User Profile</span>
+          <span class="headline">User</span>
         </v-card-title>
         <v-card-text>
           <v-row>
@@ -98,7 +96,6 @@ interface Message {
 export default class App extends Vue {
   name = "App";
 
-  private valid: boolean | null = false;
   private dialog: boolean | null = true;
   private messages: Array<Message> = [];
   private model: Message = {
@@ -131,7 +128,7 @@ export default class App extends Vue {
 
     connection.invoke("SendMessage", args);
 
-    this.model.text = null;
+    this.model.text = "";
     this.model.sendOn = new Date();
   }
 
