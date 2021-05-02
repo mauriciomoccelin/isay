@@ -146,7 +146,7 @@ export default class App extends Vue {
 
   @Watch("model.user")
   onModelUserChanged(value: string): void {
-    localStorage.setItem("user", value);
+    sessionStorage.setItem("user", value);
   }
 
   async mounted(): Promise<void> {
@@ -157,7 +157,7 @@ export default class App extends Vue {
       .then((response) => response.json())
       .then((messages) => (this.messages = messages as Array<Message>));
 
-    const user = localStorage.getItem("user") as string;
+    const user = sessionStorage.getItem("user") as string;
     if (user === null) {
       this.dialog = true;
     } else {
