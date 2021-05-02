@@ -37,6 +37,7 @@ namespace SignalRChat
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SignalRChat", Version = "v1" });
             });
             services.AddSignalR();
+            services.AddDistributedMemoryCache();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
