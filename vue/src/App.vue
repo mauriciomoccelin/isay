@@ -87,16 +87,17 @@
 <script lang="ts">
 import Vue from "vue";
 import * as signalR from "@microsoft/signalr";
-import { Component } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 
 const connection = new signalR.HubConnectionBuilder()
   .withUrl("https://localhost:5001/chathub")
+  .withAutomaticReconnect()
   .build();
 
 interface Message {
   user: string;
-  text: string | null;
-  sendOn: Date;
+  text: string;
+  sendOn: string;
 }
 
 @Component({
@@ -109,12 +110,12 @@ interface Message {
 export default class App extends Vue {
   name = "App";
 
-  private dialog: boolean | null = true;
+  private dialog: boolean | null = false;
   private messages: Array<Message> = [];
   private model: Message = {
     user: "",
-    text: null,
-    sendOn: new Date(),
+    text: "",
+    sendOn: "",
   };
 
   get hasUserName(): boolean {
@@ -125,8 +126,7 @@ export default class App extends Vue {
     return true;
   }
 
-  received(args: string): void {
-    const message: Message = JSON.parse(args);
+  received(message: Message): void {
     this.messages.push(message);
     this.messages = this.messages.sort((a, b) => {
       if (a.sendOn < b.sendOn) return -1;
@@ -136,18 +136,33 @@ export default class App extends Vue {
   }
 
   send(): void {
-    this.model.sendOn = new Date();
-    const args = JSON.stringify(this.model);
+    this.model.sendOn = new Date().toJSON();
 
-    connection.invoke("SendMessage", args);
+    connection.invoke("SendMessage", Object.assign({}, this.model));
 
     this.model.text = "";
-    this.model.sendOn = new Date();
+    this.model.sendOn = "";
+  }
+
+  @Watch("model.user")
+  onModelUserChanged(value: string): void {
+    localStorage.setItem("user", value);
   }
 
   async mounted(): Promise<void> {
     await connection.start();
     connection.on("ReceiveMessage", this.received);
+
+    fetch("https://localhost:5001/messages/get-all")
+      .then((response) => response.json())
+      .then((messages) => (this.messages = messages as Array<Message>));
+
+    const user = localStorage.getItem("user") as string;
+    if (user === null) {
+      this.dialog = true;
+    } else {
+      this.model.user = user;
+    }
   }
 }
 </script>
