@@ -1,48 +1,55 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
-      <v-spacer v-if="!$vuetify.breakpoint.mobile"></v-spacer>
+    <v-app-bar app>
       <v-toolbar-title>Signal R | Real Time Chat</v-toolbar-title>
-      <v-spacer v-if="!$vuetify.breakpoint.mobile"></v-spacer>
+      <v-spacer></v-spacer>
+      <v-switch class="pt-4" v-model="$vuetify.theme.dark"></v-switch>
     </v-app-bar>
 
     <v-main>
-      <v-container>
-        <v-form @submit.prevent="send">
-          <v-row>
-            <v-col cols="12" xl="4" lg="4">
-              <v-text-field
-                outlined
-                name="input-7-4"
-                label="Message"
-                v-model="model.text"
-              ></v-text-field>
-              <v-btn
-                :disabled="!model.text"
-                color="success"
-                class="mr-4"
-                @click="send"
-              >
-                Send
-              </v-btn>
-            </v-col>
-            <v-col cols="12" xl="4" lg="4">
-              <v-list subheader>
-                <v-subheader class="headline">Messages</v-subheader>
-                <v-list-item v-for="(message, index) in messages" :key="index">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      {{ message.user }}
-                    </v-list-item-title>
-                    <v-list-item-subtitle class="text-wrap text-justify">
-                      {{ message.text }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
-        </v-form>
+      <v-container class="fill-height pa-0">
+        <v-row class="no-gutters elevation-4">
+          <v-col cols="auto" class="flex-grow-1 flex-shrink-0">
+            <v-responsive height="90vh" class="overflow-y-hidden fill-height">
+              <v-card flat class="d-flex flex-column fill-height">
+                <v-card-title> {{ model.user }} </v-card-title>
+                <v-card-text class="flex-grow-1 overflow-y-auto">
+                  <template v-for="(message, i) in messages">
+                    <div
+                      :class="{
+                        'd-flex flex-row-reverse': model.user === message.user,
+                      }"
+                      :key="`Message:${i}`"
+                    >
+                      <v-chip
+                        dark
+                        class="pa-4 mb-2"
+                        style="height: auto; white-space: normal"
+                        :color="model.user === message.user ? 'primary' : ''"
+                      >
+                        {{ message.text }}
+                      </v-chip>
+                    </div>
+                  </template>
+                </v-card-text>
+                <v-card-text class="flex-shrink-1">
+                  <v-text-field
+                    shaped
+                    outlined
+                    no-details
+                    type="text"
+                    hide-details
+                    label="Message"
+                    @keyup.enter="send"
+                    v-model="model.text"
+                    @click:append-outer="send"
+                    append-outer-icon="mdi-send"
+                  />
+                </v-card-text>
+              </v-card>
+            </v-responsive>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
 
@@ -92,22 +99,28 @@ interface Message {
   sendOn: Date;
 }
 
-@Component
+@Component({
+  filters: {
+    date(value: Date) {
+      return value ? new Date(value).toLocaleTimeString() : "";
+    },
+  },
+})
 export default class App extends Vue {
   name = "App";
 
   private dialog: boolean | null = true;
   private messages: Array<Message> = [];
   private model: Message = {
+    user: "",
     text: null,
-    user: "Anonymous",
     sendOn: new Date(),
   };
 
   get hasUserName(): boolean {
     const name = this.model.user;
     if (name === "") return false;
-    if (name === "Anonymous") return false;
+    if (name === "") return false;
     if (name === null) return false;
     return true;
   }
@@ -116,8 +129,8 @@ export default class App extends Vue {
     const message: Message = JSON.parse(args);
     this.messages.push(message);
     this.messages = this.messages.sort((a, b) => {
-      if (a.sendOn < b.sendOn) return 1;
-      if (a.sendOn > b.sendOn) return -1;
+      if (a.sendOn < b.sendOn) return -1;
+      if (a.sendOn > b.sendOn) return 1;
       return 0;
     });
   }
