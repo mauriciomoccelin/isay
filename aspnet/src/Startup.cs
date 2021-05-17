@@ -24,7 +24,7 @@ namespace SignalRChat
                 options.AddDefaultPolicy(
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:8081")
+                        builder.WithOrigins("http://localhost:8080")
                         .AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader();
@@ -53,13 +53,14 @@ namespace SignalRChat
 
             app.UseRouting();
 
-            app.UseCors(builder =>
-                builder
+            app.UseCors(
+                builder => builder
                 .AllowCredentials()
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader()
-                .WithOrigins("http://localhost:8081"));
+                .WithOrigins("http://localhost:8080")
+            );
 
             app.UseAuthorization();
 
