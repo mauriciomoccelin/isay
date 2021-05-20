@@ -19,18 +19,7 @@ namespace SignalRChat
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(
-                    builder =>
-                    {
-                        builder.WithOrigins("http://localhost:8080")
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                    }
-                );
-            });
+            services.AddCors();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -54,12 +43,11 @@ namespace SignalRChat
             app.UseRouting();
 
             app.UseCors(
-                builder => builder
-                .AllowCredentials()
-                .AllowAnyOrigin()
+                x => x
                 .AllowAnyMethod()
                 .AllowAnyHeader()
-                .WithOrigins("http://localhost:8080")
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials()
             );
 
             app.UseAuthorization();
