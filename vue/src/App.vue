@@ -90,7 +90,7 @@ import * as signalR from "@microsoft/signalr";
 import { Component, Watch } from "vue-property-decorator";
 
 const connection = new signalR.HubConnectionBuilder()
-  .withUrl("https://key-talk.herokuapp.com/chathub")
+  .withUrl("https://isay.azurewebsites.net/chathub")
   .withAutomaticReconnect()
   .build();
 
@@ -153,7 +153,7 @@ export default class App extends Vue {
     await connection.start();
     connection.on("ReceiveMessage", this.received);
 
-    fetch("https://key-talk.herokuapp.com/messages/get-all")
+    fetch("https://isay.azurewebsites.net/messages/get-all")
       .then((response) => response.json())
       .then((messages) => (this.messages = messages as Array<Message>));
 
