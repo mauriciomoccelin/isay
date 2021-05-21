@@ -23,11 +23,20 @@
                     >
                       <v-chip
                         dark
-                        class="pa-4 mb-2"
+                        class="pa-0 mb-2"
                         style="height: auto; white-space: normal"
                         :color="model.user === message.user ? 'primary' : ''"
                       >
-                        {{ message.text }}
+                        <v-list-item>
+                          <v-list-item-content>
+                            <v-list-item-title class="text-wrap">
+                              {{ message.text }}
+                            </v-list-item-title>
+                            <v-list-item-subtitle class="text-wrap">
+                              {{ message.user }}
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
                       </v-chip>
                     </div>
                   </template>
@@ -39,11 +48,11 @@
                     no-details
                     type="text"
                     hide-details
-                    label="Message"
                     @keyup.enter="send"
                     v-model="model.text"
                     @click:append-outer="send"
                     append-outer-icon="mdi-send"
+                    label="Digite uma mensagem..."
                   />
                 </v-card-text>
               </v-card>
@@ -56,15 +65,16 @@
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
-          <span class="headline">User</span>
+          <span class="headline">Usuário</span>
         </v-card-title>
         <v-card-text>
           <v-row>
             <v-col cols="12">
               <v-text-field
                 class="mt-8"
+                label="Nome"
                 v-model="model.user"
-                label="Your full name"
+                hint="Informe seu nome completo ex: João da Silva"
               />
             </v-col>
           </v-row>
@@ -76,7 +86,7 @@
             color="success"
             @click="dialog = false"
             :disabled="!hasUserName"
-            >Ok</v-btn
+            >Começar</v-btn
           >
         </v-card-actions>
       </v-card>
@@ -150,19 +160,24 @@ export default class App extends Vue {
   }
 
   async mounted(): Promise<void> {
-    await connection.start();
-    connection.on("ReceiveMessage", this.received);
-
-    fetch("https://isay.azurewebsites.net/messages/get-all")
-      .then((response) => response.json())
-      .then((messages) => (this.messages = messages as Array<Message>));
-
     const user = sessionStorage.getItem("user") as string;
     if (user === null) {
       this.dialog = true;
     } else {
       this.model.user = user;
     }
+
+    await connection.start();
+    connection.on("ReceiveMessage", this.received);
+
+    fetch("https://isay.azurewebsites.net/messages/get-all")
+      .then((response) => response.json())
+      .then((messages) => (this.messages = messages as Array<Message>));
+  }
+
+  beforeDestroy(): void {
+    connection.off("ReceiveMessage");
+    connection.stop();
   }
 }
 </script>
